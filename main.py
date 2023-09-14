@@ -25,6 +25,7 @@ dlg.type_keys('>CDCONVINC')
 kb.press("ENTER")
 nome_arquivo = "cpfs.txt"
 cpfs = []
+cpfs_nao_localizado = []
 
 with open(nome_arquivo, "r") as arquivo:
     cpfs = arquivo.read().splitlines()
@@ -40,6 +41,8 @@ for cpf in cpfs:
     if erro_cpf == "(4057) NAO EXISTEM DADOS PARA ESTA CONSULTA":
         print(cpf)
         dlg.type_keys('{TAB}')
+    elif "CPF não encontrado" in erro_cpf:
+        cpfs_nao_localizado.append(cpf)
         continue
     time.sleep(3)
     kb.press("ENTER")
