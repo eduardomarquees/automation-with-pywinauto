@@ -7,12 +7,15 @@ import ControleTerminal3270
 from pywinauto import *
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
+#Tempo UNIVERSAL
 intervalo = 1.5
+
+#Interagindo com SIAPENET
 app = Application().connect(title_re="^Terminal 3270.*")
 dlg = app.window(title_re="^Terminal 3270.*")
 Acesso = ControleTerminal3270.Janela3270()
 time.sleep(intervalo)
-#dlg.type_keys('{F3}')
+dlg.type_keys('{F3}')
 time.sleep(intervalo)
 dlg.type_keys('{F2}')
 
@@ -22,6 +25,7 @@ dlg.type_keys('>CDCONVINC')
 kb.press("ENTER")
 nome_arquivo = "cpfs.txt"
 cpfs = []
+
 with open(nome_arquivo, "r") as arquivo:
     cpfs = arquivo.read().splitlines()
 for cpf in cpfs:
