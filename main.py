@@ -7,6 +7,7 @@ import ControleTerminal3270
 from pywinauto import *
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
+
 #Tempo UNIVERSAL
 intervalo = 1.5
 
@@ -15,7 +16,7 @@ app = Application().connect(title_re="^Terminal 3270.*")
 dlg = app.window(title_re="^Terminal 3270.*")
 Acesso = ControleTerminal3270.Janela3270()
 time.sleep(intervalo)
-dlg.type_keys('{F3}')
+#dlg.type_keys('{F3}')
 time.sleep(intervalo)
 dlg.type_keys('{F2}')
 
@@ -37,9 +38,9 @@ for cpf in cpfs:
     dlg.type_keys(cpf)
     kb.press("ENTER")
     time.sleep(intervalo)
-    erro_cpf = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 2, 24, 80).strip()
+    erro_cpf = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
     print(erro_cpf)
-    if erro_cpf == "(4057) NAO EXISTEM DADOS PARA ESTA CONSULTA":
+    if erro_cpf == "NAO EXISTEM DADOS PARA ESTA CONSULTA":
         print(cpf)
         dlg.type_keys('{TAB}')
         continue
