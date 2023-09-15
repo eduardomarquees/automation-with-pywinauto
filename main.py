@@ -27,6 +27,7 @@ nome_arquivo = "cpfs.txt"
 cpfs = []
 cpfs_nao_localizado = []
 
+#Abrindo arquivos para leitura de CPFS
 with open(nome_arquivo, "r") as arquivo:
     cpfs = arquivo.read().splitlines()
 for cpf in cpfs:
@@ -41,8 +42,6 @@ for cpf in cpfs:
     if erro_cpf == "(4057) NAO EXISTEM DADOS PARA ESTA CONSULTA":
         print(cpf)
         dlg.type_keys('{TAB}')
-    elif "CPF não encontrado" in erro_cpf:
-        cpfs_nao_localizado.append(cpf)
         continue
     time.sleep(3)
     kb.press("ENTER")
@@ -56,7 +55,7 @@ for cpf in cpfs:
     dlg.type_keys('^p')
     time.sleep(intervalo)
 
-    #Obtendo Janela
+    #Obtendo Janela de impressão
     app = Application().connect(title_re="Imprimir")
     time.sleep(intervalo)
     window = app.window(title_re="Imprimir")
@@ -64,7 +63,7 @@ for cpf in cpfs:
     kb.press("Enter")
     time.sleep(intervalo)
 
-    #Obtendo Janela
+    #Obtendo Janela de salvar saída de impressão
     app = Application().connect(title_re='Salvar Saída de Impressão como')
     dlg = app[u'Salvar Saída de Impressão como']
     time.sleep(intervalo)
@@ -81,16 +80,3 @@ for cpf in cpfs:
     dlg = app.window(title_re="^Terminal 3270.*")
     Acesso = ControleTerminal3270.Janela3270()
     dlg.type_keys('{F12}')
-
-
-
-
-
-
-
-
-
-
-
-
-
