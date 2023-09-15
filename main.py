@@ -16,7 +16,7 @@ app = Application().connect(title_re="^Terminal 3270.*")
 dlg = app.window(title_re="^Terminal 3270.*")
 Acesso = ControleTerminal3270.Janela3270()
 time.sleep(intervalo)
-#dlg.type_keys('{F3}')
+dlg.type_keys('{F3}')
 time.sleep(intervalo)
 dlg.type_keys('{F2}')
 
@@ -26,7 +26,7 @@ dlg.type_keys('>CDCONVINC')
 kb.press("ENTER")
 nome_arquivo = "cpfs.txt"
 cpfs = []
-cpfs_nao_localizado = []
+cpfs_nao_localizados = []
 
 #Abrindo arquivos para leitura de CPFS
 with open(nome_arquivo, "r") as arquivo:
@@ -39,11 +39,16 @@ for cpf in cpfs:
     kb.press("ENTER")
     time.sleep(intervalo)
     erro_cpf = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
-    print(erro_cpf)
+    #print(erro_cpf)
     if erro_cpf == "NAO EXISTEM DADOS PARA ESTA CONSULTA":
-        print(cpf)
+        cpfs_nao_localizados.append(cpf)
+        nome_arquivo_nao_localizados = "cpfs_nao_localizados.txt"
+        with open(nome_arquivo_nao_localizados, "w") as arquivo_nao_localizados:
+            for cpf_nao_localizado in cpfs_nao_localizados:
+                arquivo_nao_localizados.write(f"{cpf_nao_localizado}\n")
         dlg.type_keys('{TAB}')
         continue
+
     time.sleep(3)
     kb.press("ENTER")
     #time.sleep(5)
