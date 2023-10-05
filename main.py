@@ -1,3 +1,4 @@
+import csv
 import time
 import glob
 import os
@@ -7,6 +8,7 @@ import ControleTerminal3270
 from pywinauto import *
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
+import pandas as pd
 
 #Tempo UNIVERSAL
 intervalo = 1.5
@@ -16,7 +18,7 @@ app = Application().connect(title_re="^Terminal 3270.*")
 dlg = app.window(title_re="^Terminal 3270.*")
 Acesso = ControleTerminal3270.Janela3270()
 time.sleep(intervalo)
-dlg.type_keys('{F3}')
+#dlg.type_keys('{F3}')
 time.sleep(intervalo)
 dlg.type_keys('{F2}')
 
@@ -24,44 +26,53 @@ dlg.type_keys('{F2}')
 #                    #EXTRAINDO VÍNCULOS...
 dlg.type_keys('>CDCONVINC')
 kb.press("ENTER")
-nome_arquivo = "cpfs.txt"
-cpfs = []
-cpfs_nao_localizados = []
+lista_dados = []
+dados_invalidos = []
+
+nome_arquivo = "dados.csv"
+nao_encontrado = "cpf_nao_encontrado.csv"
+cpf_invalido = "cpfs_invalidos.csv"
+
 
 #Abrindo arquivos para leitura de CPFS
-with open(nome_arquivo, "r") as arquivo:
-    cpfs = arquivo.read().splitlines()
-for cpf in cpfs:
-    #print("CPF:", cpf)
+data = pd.read_csv(nome_arquivo, dtype={'CPF': str})
+for elemento_desejado in data['CPF']:
+    print(elemento_desejado)
     time.sleep(intervalo)
     dlg.type_keys('{TAB}')
-    dlg.type_keys(cpf)
+    dlg.type_keys(elemento_desejado)
     kb.press("ENTER")
-    time.sleep(intervalo)
-    erro_cpf = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
-    #print(erro_cpf)
-    if erro_cpf == "NAO EXISTEM DADOS PARA ESTA CONSULTA":
-        cpfs_nao_localizados.append(cpf)
-        nome_arquivo_nao_localizados = "cpfs_nao_localizados.txt"
-        with open(nome_arquivo_nao_localizados, "w") as arquivo_nao_localizados:
-            for cpf_nao_localizado in cpfs_nao_localizados:
-                arquivo_nao_localizados.write(f"{cpf_nao_localizado}\n")
+
+    cpf_invalido = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
+    if cpf_invalido == "CPF INVALIDO":
+        dados_invalidos.append(elemento_desejado)
         dlg.type_keys('{TAB}')
         continue
 
-    time.sleep(3)
+
+    time.sleep(intervalo)
+
+    erro_cpf = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
+    if erro_cpf == "NAO EXISTEM DADOS PARA ESTA CONSULTA":
+        lista_dados.append(elemento_desejado)
+        dlg.type_keys('{TAB}')
+        continue
+
+
+    time.sleep(intervalo)
     kb.press("ENTER")
-    #time.sleep(5)
+    # time.sleep(5)
     dlg.type_keys('x')
     kb.press("ENTER")
     time.sleep(intervalo)
-    encontrar_nome = Acesso.pega_texto_siape(Acesso.copia_tela(),6,12,6,80).strip()
-    #print(encontrar_nome)
+
+    # Copiando nome é imprimindo o Vínculo
+    encontrar_nome = Acesso.pega_texto_siape(Acesso.copia_tela(), 6, 12, 6, 80).strip()
     time.sleep(intervalo)
     dlg.type_keys('^p')
     time.sleep(intervalo)
 
-    #Obtendo Janela de impressão
+    # Obtendo Janela de impressão
     app = Application().connect(title_re="Imprimir")
     time.sleep(intervalo)
     window = app.window(title_re="Imprimir")
@@ -69,7 +80,7 @@ for cpf in cpfs:
     kb.press("Enter")
     time.sleep(intervalo)
 
-    #Obtendo Janela de salvar saída de impressão
+    # Obtendo Janela de salvar saída de impressão
     app = Application().connect(title_re='Salvar Saída de Impressão como')
     dlg = app[u'Salvar Saída de Impressão como']
     time.sleep(intervalo)
@@ -81,8 +92,21 @@ for cpf in cpfs:
     kb.press("Enter")
     time.sleep(intervalo)
 
-    #Voltando para página de vínculo
+    # Voltando para página de vínculo
     app = Application().connect(title_re="^Terminal 3270.*")
     dlg = app.window(title_re="^Terminal 3270.*")
     Acesso = ControleTerminal3270.Janela3270()
     dlg.type_keys('{F12}')
+    #dlg.type_keys('{TAB}')
+
+
+
+
+df = pd.DataFrame(lista_dados, columns=['CPF'])
+df.to_csv('cpf_nao_encontrado.csv', index=False)
+
+df2 = pd.DataFrame(dados_invalidos, columns=['CPFS Invalidos'])
+df2.to_csv('cpfs_invalidos.csv', index=False)
+
+
+
