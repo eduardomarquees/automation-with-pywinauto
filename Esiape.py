@@ -19,8 +19,8 @@ browser.maximize_window()
 time.sleep(5)
 
 #Realizando login
-browser.find_element(By.ID, 'txtUsuario').send_keys('eduardo.marques@economia.gov.br')
-browser.find_element(By.ID, 'pwdSenha').send_keys(('985623ee..'))
+browser.find_element(By.ID, 'txtUsuario').send_keys('')
+browser.find_element(By.ID, 'pwdSenha').send_keys((''))
 browser.find_element(By.XPATH, '//*[@id="selOrgao"]').send_keys('ME')
 browser.find_element(By.ID, 'Acessar').click()
 time.sleep(10)
