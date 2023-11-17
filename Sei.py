@@ -260,7 +260,7 @@ for arquivo in lista_arquivos:
         formato = browser.find_element(By.XPATH, '//*[@id="divOptNato"]/div/label')
         formato.click()
         time.sleep(3)
-        
+
         #Nome na Árvore
         browser.switch_to.default_content()
         browser.switch_to.frame('ifrVisualizacao')
