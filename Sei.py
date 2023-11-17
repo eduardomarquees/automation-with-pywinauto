@@ -260,15 +260,7 @@ for arquivo in lista_arquivos:
         formato = browser.find_element(By.XPATH, '//*[@id="divOptNato"]/div/label')
         formato.click()
         time.sleep(3)
-
-        # #Número
-        # browser.switch_to.default_content()
-        # browser.switch_to.frame('ifrVisualizacao')
-        # numero = browser.find_element(By.ID,'txtNumero')
-        # numero.send_keys('CDCONVINC')
-        # time.sleep(3)
-        #nome_completo = encontrar_nome.replace("{SPACE}", " ")
-
+        
         #Nome na Árvore
         browser.switch_to.default_content()
         browser.switch_to.frame('ifrVisualizacao')
