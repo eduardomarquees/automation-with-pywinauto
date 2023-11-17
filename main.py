@@ -10,8 +10,10 @@ from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
 import pandas as pd
 
+
 #Tempo UNIVERSAL
-intervalo = 1.5
+intervalo = 0.5
+
 
 #Interagindo com SIAPENET
 app = Application().connect(title_re="^Terminal 3270.*")
@@ -28,6 +30,7 @@ dlg.type_keys('>CDCONVINC')
 kb.press("ENTER")
 lista_dados = []
 dados_invalidos = []
+
 
 nome_arquivo = "dados.csv"
 nao_encontrado = "cpf_nao_encontrado.csv"
@@ -98,8 +101,6 @@ for elemento_desejado in data['CPF']:
     Acesso = ControleTerminal3270.Janela3270()
     dlg.type_keys('{F12}')
     #dlg.type_keys('{TAB}')
-
-
 
 
 df = pd.DataFrame(lista_dados, columns=['CPF'])
