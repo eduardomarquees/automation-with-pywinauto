@@ -1,13 +1,15 @@
 import os
 import time
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from datetime import datetime
 import pandas as pd
 from selenium import webdriver
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from pywinauto.application import Application
+from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 import ControleTerminal3270
@@ -25,22 +27,42 @@ browser = webdriver.Chrome(service=servico)
 url = 'https://sei.economia.gov.br/sip/modulos/MF/login_especial/login_especial.php?sigla_orgao_sistema=MGI&sigla_sistema=SEI'
 browser.get(url)
 browser.maximize_window()
-time.sleep(5)
+time.sleep(60)
 
 #Realizando login
 browser.find_element(By.ID, 'txtUsuario').send_keys('')
 browser.find_element(By.ID, 'pwdSenha').send_keys('')
-browser.find_element(By.XPATH, '//*[@id="selOrgao"]').send_keys('ME')
+browser.find_element(By.XPATH, '//*[@id="selOrgao"]').send_keys('')
 browser.find_element(By.ID, 'Acessar').click()
-time.sleep(10)
+time.sleep(5)
 
 #Clicando em Visualização detalhada
 browser.find_element(By.XPATH, '//*[@id="divFiltro"]/div[1]/a').click()
 time.sleep(5)
 
+#Clicando em Configurar Nível de Detalhe
+browser.find_element(By.XPATH, '//*[@id="ancNivelDetalhe"]').click()
+time.sleep(3)
+
+#Configurando niveis
+browser.switch_to.default_content()
+browser.switch_to.frame('modal-frame')
+checkboxes = browser.find_elements(By.CLASS_NAME, 'infraCheckboxInput')
+for checkbox in checkboxes:
+    if not checkbox.is_selected():  # Checa se o checkbox já está marcado
+        browser.execute_script("arguments[0].click();", checkbox)  # Marca o checkbox
+browser.find_element(By.XPATH,'//*[@id="divInfraBarraComandosSuperior"]/button').click()
+time.sleep(2)
+browser.switch_to.default_content()
 #Clicando em ver por marcadores
-browser.find_element(By.XPATH, '//*[@id="divFiltro"]/div[4]/a').click()
-time.sleep(5)
+try:
+    link = WebDriverWait(browser, 10).until(
+        EC.element_to_be_clickable(
+            (By.XPATH, "//a[contains(@class, 'ancoraPadraoPreta') and contains(text(), 'Ver por marcadores')]")))
+    link.click()
+    time.sleep(1)  # Simula comportamento humano
+except TimeoutException:
+    print("Elemento não encontrado ou não clicável dentro do tempo limite.")
 
 #Selecionando Marcador
 browser.find_element(By.XPATH, '//*[@onclick="filtrarMarcador(77951)"]').click()
@@ -90,7 +112,7 @@ df.to_csv('dados.csv', index=False)
 #ENTRANDO NO SIAPENET
 
 #Tempo UNIVERSAL
-intervalo = 1.3
+intervalo = 1.5
 
 
 #Interagindo com SIAPENET
@@ -203,7 +225,7 @@ for elemento_desejado, processos in zip(cpfs, processos):
     kb.press('Enter')
 
 
-#app.kill()
+app.kill()
 df = pd.DataFrame(lista_dados, columns=['CPF'])
 df.to_csv('cpf_nao_encontrado.csv', index=False)
 
@@ -229,7 +251,7 @@ for arquivo in lista_arquivos:
         localizar_processo = browser.find_element(By.ID, 'txtPesquisaRapida')
         localizar_processo.send_keys(conjuntos_caracters)
         localizar_processo.send_keys(Keys.ENTER)
-        time.sleep(10)
+        time.sleep(5)
 
         # Clicando em incluir processo
         browser.switch_to.default_content()
@@ -327,7 +349,7 @@ for arquivo in lista_arquivos:
         browser.switch_to.default_content()
         browser.switch_to.frame('ifrVisualizacao')
         marcador = browser.find_element(By.CLASS_NAME,'dd-selected').click()
-        processo_instruido = browser.find_element(By.XPATH,'//*[@id="selMarcador"]/ul/li[7]/a').click()
+        processo_instruido = browser.find_element(By.XPATH,"//label[contains(@class, 'dd-option-text') and contains(text(), 'Processo INSTRUÍDO')]").click()
         salvar = browser.find_element(By.XPATH,'//*[@id="sbmSalvar"]').click()
 
         #Arvore Processo

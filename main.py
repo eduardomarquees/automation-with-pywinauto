@@ -1,113 +1,52 @@
-import csv
 import time
-import glob
-import os
-from tkinter import *
-import keyboard as kb
-import ControleTerminal3270
-from pywinauto import *
+
+from selenium import webdriver
+from selenium.common import NoSuchElementException, TimeoutException
+from selenium.webdriver import Keys
+from selenium.webdriver.common.by import By
 from pywinauto.application import Application
-from pywinauto.findwindows import ElementNotFoundError
-import pandas as pd
+from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+import ControleTerminal3270
+import keyboard as kb
+#from selenium.webdriver.chrome.options import Options
 
 
-#Tempo UNIVERSAL
-intervalo = 0.5
+#options = Options()
+#options.add_experimental_option("detach", True)
+servico = Service(ChromeDriverManager().install())
+browser = webdriver.Chrome(service=servico)
+#
+#
+#Abrindo o Chrome
+url = 'https://sei.economia.gov.br/sip/modulos/MF/login_especial/login_especial.php?sigla_orgao_sistema=MGI&sigla_sistema=SEI'
+browser.get(url)
+browser.maximize_window()
+time.sleep(5)
+
+#Realizando login
+browser.find_element(By.ID, 'txtUsuario').send_keys('eduardo.marques@economia.gov.br')
+browser.find_element(By.ID, 'pwdSenha').send_keys('Duduym985623ae.')
+browser.find_element(By.XPATH, '//*[@id="selOrgao"]').send_keys('ME')
+browser.find_element(By.ID, 'Acessar').click()
+time.sleep(5)
 
 
-#Interagindo com SIAPENET
-app = Application().connect(title_re="^Terminal 3270.*")
-dlg = app.window(title_re="^Terminal 3270.*")
-Acesso = ControleTerminal3270.Janela3270()
-time.sleep(intervalo)
-#dlg.type_keys('{F3}')
-time.sleep(intervalo)
-dlg.type_keys('{F2}')
+# Gerenciar Marcador
+# browser.switch_to.default_content()
+# browser.switch_to.frame('ifrVisualizacao')
+gerenciar_marcador = browser.find_element(By.XPATH, '//*[@id="tblMarcadores"]/tbody/tr[6]/td[1]/a[2]').click()
+time.sleep(3)
 
+#Adicionar Marcador
+browser.switch_to.default_content()
+browser.switch_to.frame('ifrVisualizacao')
+adicionar = browser.find_element(By.XPATH,'//*[@id="btnAdicionar"]').click()
 
-#                    #EXTRAINDO VÍNCULOS...
-dlg.type_keys('>CDCONVINC')
-kb.press("ENTER")
-lista_dados = []
-dados_invalidos = []
-
-
-nome_arquivo = "dados.csv"
-nao_encontrado = "cpf_nao_encontrado.csv"
-cpf_invalido = "cpfs_invalidos.csv"
-
-
-#Abrindo arquivos para leitura de CPFS
-data = pd.read_csv(nome_arquivo, dtype={'CPF': str})
-for elemento_desejado in data['CPF']:
-    print(elemento_desejado)
-    time.sleep(intervalo)
-    dlg.type_keys('{TAB}')
-    dlg.type_keys(elemento_desejado)
-    kb.press("ENTER")
-
-    cpf_invalido = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
-    if cpf_invalido == "CPF INVALIDO":
-        dados_invalidos.append(elemento_desejado)
-        dlg.type_keys('{TAB}')
-        continue
-
-
-    time.sleep(intervalo)
-
-    erro_cpf = Acesso.pega_texto_siape(Acesso.copia_tela(), 24, 9, 24, 80).strip()
-    if erro_cpf == "NAO EXISTEM DADOS PARA ESTA CONSULTA":
-        lista_dados.append(elemento_desejado)
-        dlg.type_keys('{TAB}')
-        continue
-
-
-    time.sleep(intervalo)
-    kb.press("ENTER")
-    # time.sleep(5)
-    dlg.type_keys('x')
-    kb.press("ENTER")
-    time.sleep(intervalo)
-
-    # Copiando nome é imprimindo o Vínculo
-    encontrar_nome = Acesso.pega_texto_siape(Acesso.copia_tela(), 6, 12, 6, 80).strip()
-    time.sleep(intervalo)
-    dlg.type_keys('^p')
-    time.sleep(intervalo)
-
-    # Obtendo Janela de impressão
-    app = Application().connect(title_re="Imprimir")
-    time.sleep(intervalo)
-    window = app.window(title_re="Imprimir")
-    window.set_focus()
-    kb.press("Enter")
-    time.sleep(intervalo)
-
-    # Obtendo Janela de salvar saída de impressão
-    app = Application().connect(title_re='Salvar Saída de Impressão como')
-    dlg = app[u'Salvar Saída de Impressão como']
-    time.sleep(intervalo)
-    window = app.window(title_re='Salvar Saída de Impressão como')
-    window.set_focus()
-    encontrar_nome = encontrar_nome.replace(" ", "{SPACE}")
-    time.sleep(intervalo)
-    dlg.type_keys('Vínculo' + "{SPACE}" + encontrar_nome)
-    kb.press("Enter")
-    time.sleep(intervalo)
-
-    # Voltando para página de vínculo
-    app = Application().connect(title_re="^Terminal 3270.*")
-    dlg = app.window(title_re="^Terminal 3270.*")
-    Acesso = ControleTerminal3270.Janela3270()
-    dlg.type_keys('{F12}')
-    #dlg.type_keys('{TAB}')
-
-
-df = pd.DataFrame(lista_dados, columns=['CPF'])
-df.to_csv('cpf_nao_encontrado.csv', index=False)
-
-df2 = pd.DataFrame(dados_invalidos, columns=['CPFS Invalidos'])
-df2.to_csv('cpfs_invalidos.csv', index=False)
-
-
-
+#Marcador PROCESSO INSTRUÍDO
+browser.switch_to.default_content()
+browser.switch_to.frame('ifrVisualizacao')
+marcador = browser.find_element(By.CLASS_NAME,'dd-selected').click()
+processo_instruido = browser.find_element(By.XPATH,'//li[contains(text(), "Processo INSTRUÍDO")]').click()
+salvar = browser.find_element(By.XPATH,'//*[@id="sbmSalvar"]').click()
